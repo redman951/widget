@@ -1,4 +1,4 @@
-const
+﻿const
   switchInterval = 4000;
   timerInterval = 50,
   showHideTimePercent = 30; //%
@@ -16,7 +16,6 @@ let
   PictureWidth,
   PictureHeight,
   animationTimerId,
-  switchCityTimerId,
   cityWeather = [];
 
 function drawCloud(context){
@@ -30,11 +29,7 @@ function drawCloud(context){
 	context.arc(40+dx,30+dy,9,-0.2*Math.PI,1*Math.PI,true);
 	context.arc(20+dx,40+dy,9,-Math.PI/2,Math.PI/2,true);
 	context.fillStyle = "rgb(232,236,235)";
-	context.fill();
-	//context.stroke();
-	//context.fillStyle = 'black';
-	
-	
+	context.fill();	
 	context.closePath();
 	context.stroke();
 }
