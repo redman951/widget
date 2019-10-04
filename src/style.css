@@ -2,33 +2,47 @@
   #WeatherWidget{
 	background-color: rgb(232,236,235);
     outline: 2px solid #000;
-	width: 200px;
-	height: 220px;
+	width: 184px;
   }
+  
+  #WeatherWidget hr{
+	  margin-top: 0;
+  }  
   
   #WeatherWidget div{
-	  margin-left: 20px;
-  }
+  }  
 
-  #WeatherWidget span, p {
-	margin: 0px;
-    font-size: 24px;	  
-  }
-  
-  #CurrentTemperature {
-	  display: inline;
-	  font-size: 28px;
-	  vertical-align: 100%;
+  #WeatherWidget p {
+	margin: 0px 0 0 0px;
+    font-size: 20px;	  
   }
   
   #WeatherWidget img{
-	  vertical-align: baseline;
+	  margin-left: 13px;
+	  margin-right: 5px;
+	  vertical-align: middle;
 	  width:20px;
 	  height:20px;
   }
   
+  #WeatherPicture {
+	  vertical-align: top;
+  }
+  
+  #CurrentTemperature {
+	  font-size: 48px;
+  }
+  
+  #TempLine {
+	  margin-left: 13px;
+  }
+  
+  .HidingItem{
+	  display: inline-block;
+	  opacity: 0;
+  }
+  
  .TemperatureScale {
-	  display: inline;
 	  font-size: 20px;
-	  vertical-align: 100%;
+	  vertical-align: 50%;
   }

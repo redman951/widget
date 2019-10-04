@@ -1,33 +1,72 @@
 ﻿const
-  switchInterval = 4000;
-  timerInterval = 50,
-  showHideTimePercent = 30; //%
-  APIKEY = 'cf332e64a96dcb840feaf7b25240689a',
-  cityList = [
+	APIKEY = 'cf332e64a96dcb840feaf7b25240689a',
+	cityList = [
 	  "Орёл",
 	  "Москва",
 	  "Ливны"
-  ]; 
-  
+	],
+	switchInterval = 4000,
+	timerInterval = 50,
+	showHideTimePercent = 20, //%
+	drawCloudTimePercent = 70, //%
+	positionShift = 5,
+	rainAngle = 45,
+	maxRainLength = 10,
+	sunInf = {x: 20, y: 20, radius: 9, RayCnt: 7},
+	rainXY = [
+		{x:13,y:45},
+		{x:28,y:55},
+		{x:37,y:55},
+		{x:43,y:48},
+		{x:53,y:48},
+	],
+	cloudStartPos = {
+		x:30,
+	    y:15,
+	}
+	clouds = [
+		{x:30, y:40, r:12, a1: 1.0*Math.PI, a2:0.1*Math.PI},
+		{x:50, y:30, r:15, a1: 0.5*Math.PI, a2:1.5*Math.PI},
+		{x:35, y:20, r:9 , a1:-0.2*Math.PI, a2:1.0*Math.PI},
+		{x:15, y:30, r:9 , a1:-0.5*Math.PI, a2:0.5*Math.PI},
+	];		
+		
 let 
-  t = 0,
+  switchCnt = 0,
+  animCnt = 0,
   currentCityIndex,
   contex,
   PictureWidth,
   PictureHeight,
   animationTimerId,
-  cityWeather = [];
+  cityWeather = [],
+  showAlert = true;
 
-function drawCloud(context){
+function drawCloud(context, swCnt){
 	const
-	  dx = -5;
-	  dy = -10;
+	  dx = 0;
+	  dy = 0;
 	context.beginPath();
 	
-	context.arc(35+dx,50+dy,12,Math.PI,0.1*Math.PI,true);
-	context.arc(55+dx,40+dy,15,Math.PI/2,3*Math.PI/2,true);
-	context.arc(40+dx,30+dy,9,-0.2*Math.PI,1*Math.PI,true);
-	context.arc(20+dx,40+dy,9,-Math.PI/2,Math.PI/2,true);
+	for (let ind=0;ind<clouds.length;ind++){
+		let 
+			finalX = clouds[ind].x,
+			finalY = clouds[ind].y,
+			r = clouds[ind].r,
+			a1 = clouds[ind].a1,
+			a2 = clouds[ind].a2,
+			cloudDrawFrames = Math.trunc((switchInterval/timerInterval*showHideTimePercent/100)*drawCloudTimePercent/100),
+			x,y;
+			
+		if (swCnt < cloudDrawFrames){
+			x = cloudStartPos.x + swCnt*(finalX - cloudStartPos.x)/cloudDrawFrames,
+			y = cloudStartPos.y + swCnt*(finalY - cloudStartPos.y)/cloudDrawFrames;
+		} else {
+			x = finalX;
+			y = finalY;
+		}
+		context.arc(x,y,r,a1,a2,true);
+	}
 	context.fillStyle = "rgb(232,236,235)";
 	context.fill();	
 	context.closePath();
@@ -36,18 +75,20 @@ function drawCloud(context){
 
 function drawSun(context,t){
 	const 
-	  n = 7,
-	  x = 20;
-	  y = 20;
-	  rad = 9
-	  lineBeginAt = 3;
-	  lineLength = 7;
+		lineBeginAt = 3;
+		lineLength = 7;
+	 
+	let x = sunInf.x,
+	    y = sunInf.y;
+		rad = sunInf.radius;
+		n = sunInf.RayCnt;
+	  
 	context.beginPath();
 	context.ellipse(x,y,rad,rad,0,0,2*Math.PI,false);
 	context.stroke();
 	context.closePath();
 	
-	let tt = 5*t/360;
+	let tt = 8*t/360;
 	
 	context.beginPath();
 	for(let i=0;i<n;i++){
@@ -62,47 +103,52 @@ function drawSun(context,t){
 
 function drawRain(context,t){
 	let
-	  lineAngle = 45,
-	  maxLineLength = 10,	  
-	  angle;
+		angle = 5*t,
+		alpha = 2*Math.PI*rainAngle/360,
+	    lineLength = Math.abs(maxRainLength*Math.sin(2*Math.PI*angle/360)),
+		dxMax = maxRainLength*Math.cos(alpha),
+		dyMax = maxRainLength*Math.sin(alpha),
+		dx = Math.abs(lineLength*Math.cos(alpha)),
+		dy = Math.abs(lineLength*Math.sin(alpha));		
+		  
+	context.beginPath();		
 		
-	angle = 5*t;
-	
-	if (Math.trunc(angle%180)<90) {	
-	
-	  lineLength = Math.abs(maxLineLength*Math.cos(2*Math.PI*angle/360));
-	  
-		let
-		  x = -lineLength*Math.cos((2*Math.PI)*lineAngle/360);
-		  y = -lineLength*Math.sin((2*Math.PI)*lineAngle/360);
-	    context.beginPath();
-		
-		context.moveTo(20,55);
-		context.lineTo(20+x,55+y);
-		context.moveTo(30,65);
-		context.lineTo(30+x,65+y);
-		context.moveTo(40,65);
-		context.lineTo(40+x,65+y);
-		context.moveTo(50,60);
-		context.lineTo(50+x,60+y);
-		context.moveTo(60,60);
-		context.lineTo(60+x,60+y);
-		context.closePath();
-		context.stroke();
-
-		context.closePath();
-	} 
+	for (let dropI=0; dropI<rainXY.length;dropI++){
+		let 
+		  x = rainXY[dropI].x,
+		  y = rainXY[dropI].y;		
+		if ((Math.trunc(angle%180)<90)) {	
+			context.moveTo(x,y);
+			context.lineTo(x+dx, y+dy);
+		} else {
+			x+=dxMax;
+			y+=dyMax;
+			context.moveTo(x,y);
+			context.lineTo(x-dx, y-dy);
+		}
+	}
+	context.closePath();
+	context.stroke();
 }
 
-function drawWeather(Sun,Cloud,Rain,t){	
-	if (Sun) {
-		drawSun(contex,t);
-	}
-	if (Rain) {
-		drawRain(contex,t);
-	}
-	if (Cloud){
-		drawCloud(contex);
+function drawWeather(Sun,Cloud,Rain,t,swCnt){	
+	if (Cloud) {
+		if (swCnt>(switchInterval/timerInterval*showHideTimePercent/100)*drawCloudTimePercent/100) {
+			if (Rain) {
+				drawRain(contex,t);
+			}
+			if (Sun) {
+				drawSun(contex,t);
+			}
+		}
+		drawCloud(contex,swCnt);
+	} else {		
+		if (Rain) {
+			drawRain(contex,t);
+		}
+		if (Sun) {
+			drawSun(contex,t);
+		}
 	}
 }
 
@@ -125,7 +171,6 @@ function loadWeatherData(cityList){
 					currentCityIndex=i-1;
 					switchCity();
 					animationTimerId = setInterval(animationCycle,timerInterval);
-					//switchCityTimerId = setInterval(switchCity,switchInterval);
 				}
 			} else {
 				cityWeather[i] = undefined;
@@ -141,8 +186,11 @@ function switchCity(){
 	let k=1;
 	while (cityWeather[currentCityIndex] == undefined) {
 	  currentCityIndex = (currentCityIndex+1) % cityList.length;
-		  alert('wat');
 	  if (k++>3) {
+		  if (showAlert) {
+			  showAlert = false;
+			  alert('No loaded cities. Try update page in 1 minute');
+		  }
 		  return;
 	  }
 	}
@@ -167,26 +215,46 @@ function switchCity(){
 
 function animationCycle(){	
 
-	let Ni = switchInterval/timerInterval,
+	let 
+		Ni = switchInterval/timerInterval,
 		Nc = Ni * showHideTimePercent/100,
-		Nt = t%Ni,
 		opacity;
-	if (Nt <= Nc) {
-		opacity = Nt/Nc;
+	if (switchCnt <= Nc) {
+		opacity = switchCnt/Nc;
 	} else {
-		if (Nt >= Ni-Nc) {
-			opacity = (Ni-Nt)/Nc;
-			if (Nt>=Ni-1) {
+		if (switchCnt >= Ni-Nc) {
+			opacity = (Ni-switchCnt)/Nc;
+			if (switchCnt>=Ni-1) {
 				switchCity();
+				switchCnt = 0;
 			}
 		} else {
 			opacity = 1;
 		}
+	}	
+		
+	
+	let list = document.getElementsByClassName("HidingItem"),
+	    item;
+	for (item of list) {
+		item.style.opacity = opacity;
 	}
 	
-		
-	let widgetDiv = document.getElementById("WeatherWidget");
-	widgetDiv.style.opacity = opacity;
+	item = document.getElementById("CityName");
+	item.style.transform = `translateY(${positionShift*(1-opacity)}px)`;
+	
+	list = document.getElementsByName("droppingDownItems");	
+	for (item of list) {
+		if (switchCnt<Nc) {
+			item.style.transform = `translateY(${positionShift*(opacity-1)}px)`;
+		} else { 
+			if (switchCnt>Ni-Nc) {
+				item.style.transform = `translateY(${positionShift*(1-opacity)}px)`;		
+			} else {
+				item.style.transform = "translateY(0px)";
+			}
+	    }
+	}
 
 	contex.clearRect(0,0,pictureWidth,pictureHeight);
 	let 
@@ -211,8 +279,9 @@ function animationCycle(){
 		default: 
 	  sun = cloud = rain = false;
 	}
-	drawWeather(sun,cloud,rain,t);	
-	t++;
+	drawWeather(sun,cloud,rain,animCnt,switchCnt);
+	animCnt = (animCnt+1)%360;
+	switchCnt++;
 }
 
 

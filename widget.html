@@ -7,20 +7,18 @@
 
 <body onload="startWeatherWidget();">
 
-<div id="WeatherWidget" style="opacity:0">
-	<center>
-		<b><p id="CityName">Город</p></b>
-		<hr>
-		<span>
-			<b><span id="CurrentTemperature" >0</span></b><span class="TemperatureScale">&deg;C</span>
-			<canvas id="WeatherPicture" width=70px height=70px></canvas>
-		</span>		
-	</center>
-	<div id="WeatherWidgetInner">
-		<p><img src="src/drop.png"/><span id="AirHumidity">0</span>%</p>
-		<p><img src="src/wind.png"/><span id="AirSpeed">0</span> м/с</p>	 
-		<p><img src="src/pressure.png"/><span id="Pressure">0</span> мм рт.ст.</p>
-	</div>
+<div id="WeatherWidget">
+	<center><b><p id="CityName" class="HidingItem">Город</p></b></center>
+	<hr>		
+	<span id="TempLine" class="HidingItem">
+		<b><span id="CurrentTemperature" >0</span></b><span class="TemperatureScale">&deg;C</span>	
+		<canvas id="WeatherPicture" width=70px height=70px></canvas>
+	</span>
+		<p><img src="src/drop.png"/><span class="HidingItem" name="droppingDownItems"><span id="AirHumidity">0</span>%</span></p>
+		<p><img src="src/wind.png"/><span class="HidingItem" name="droppingDownItems"><span id="AirSpeed">0</span> м/с</span></p>	 
+		<p><img src="src/pressure.png"/><span class="HidingItem" name="droppingDownItems"><span id="Pressure">0</span> мм рт.ст.</span></p>
+	
+	<div id="WeatherWidgetInner"></div>
 </div>
 
 </body>
